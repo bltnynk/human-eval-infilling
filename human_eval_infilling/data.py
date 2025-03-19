@@ -10,8 +10,8 @@ def read_problems(benchmark_name: str) -> Dict[str, Dict]:
     benchmark_file = {
         "single-line": os.path.join(ROOT, "HumanEval-SingleLineInfilling.jsonl.gz"),
         "multi-line": os.path.join(ROOT, "HumanEval-MultiLineInfilling.jsonl.gz"),
-        "random-span": os.path.join(ROOT, "HumanEval-RandomSpan.jsonl.gz"),
-        "random-span-light": os.path.join(ROOT, "HumanEval-RandomSpanLight.jsonl.gz"),
+        "random-span": os.path.join(ROOT, "HumanEval-RandomSpanInfilling.jsonl.gz"),
+        "random-span-light": os.path.join(ROOT, "HumanEval-RandomSpanInfillingLight.jsonl.gz"),
         "test": os.path.join(ROOT, "example_problem.jsonl"),
     }[benchmark_name]
     return {task["task_id"]: task for task in stream_jsonl(benchmark_file)}
