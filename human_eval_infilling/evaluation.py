@@ -75,11 +75,12 @@ def evaluate_functional_correctness(
                 task_id = sample["task_id"]
                 completion = sample["output"]
                 completion_start = completion.find(FIM_MIDDLE) + len(FIM_MIDDLE)
+                completion = completion[completion_start:]
                 completion_end = len(completion)
                 for stop_word in STOP_WORDS:
                     if stop_word in completion:
                         completion_end = min(completion_end, completion.find(stop_word))
-                completion = completion[completion_start:completion_end]
+                completion = completion[:completion_end]
                 args = (problems[task_id], completion, timeout, completion_id[task_id])
                 future = executor.submit(check_correctness, *args)
                 futures.append(future)
