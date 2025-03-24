@@ -47,5 +47,5 @@ if __name__ == "__main__":
                 input['text'] = generate_input_text(sample)
                 input['stop_words'] = STOP_WORDS
                 inputs.append(input)
-    write_jsonl("../data/HumanEval-Inputs.json", inputs)
+    write_jsonl("../data/starcoder/HumanEval-Inputs.json", inputs)
     print('Wrote tasks to data/HumanEval-Inputs.json')

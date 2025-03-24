@@ -1,6 +1,7 @@
 import sys
 
 import fire
+import json
 
 from human_eval_infilling.evaluation import evaluate_functional_correctness
 
@@ -18,6 +19,10 @@ def entry_point(
     """
     k = list(map(int, k.split(",")))
     results = evaluate_functional_correctness(sample_file, k, n_workers, timeout)
+    results_file = sample_file[:sample_file.find("output")] + "eval.jsonl"
+    with open(results_file, "w") as f:
+        f.write(json.dumps(results, indent=2))
+    print(f"Results saved to {results_file}")
     print(results)
 
 
