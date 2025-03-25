@@ -60,6 +60,7 @@ def evaluate_functional_correctness(
     pass_at_ks = {}
     samples = group_samples_by_benchmark(sample_file)
     for benchmark_name in BENCHMARK_NAME:
+        print(f"Benchmarking on {benchmark_name}")
         benchmark_samples = samples[benchmark_name]
         problems = read_problems(benchmark_name)
         # Check the generated samples against test suites.
