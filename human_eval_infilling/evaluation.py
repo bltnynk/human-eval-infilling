@@ -51,7 +51,7 @@ def group_samples_by_benchmark(sample_file):
 
 def evaluate_functional_correctness(
     sample_file: str,
-    k: List[int] = [1, 10, 100],
+    k: List[int] = [1, 5, 10, 20, 50, 100],
     n_workers: int = 4,
     timeout: float = 3.0,
 ):
@@ -139,11 +139,12 @@ def evaluate_functional_correctness(
             print(f"Results already exist for {benchmark_name}. Loading...")
             results = defaultdict(list)
             with open(out_file, 'r') as f:
-                for line in f:
+                for i, line in enumerate(f):
                     result = json.loads(line)
                     if result["task_id"] not in results:
                         results[result["task_id"]] = []
-                    results[result["task_id"]].append((result["completion_id"], result))
+                    assert i % 50 == result["copy"]
+                    results[result["task_id"]].append((result["copy"], result))
             # Calculate pass@k.
             total, correct = [], []
             for result in results.values():
