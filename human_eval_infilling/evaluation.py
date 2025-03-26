@@ -1,6 +1,6 @@
 import itertools
 from collections import Counter, defaultdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, Iterable, List, Union
 
 import numpy as np
@@ -12,7 +12,7 @@ from human_eval_infilling.data import read_problems, stream_jsonl, write_jsonl
 from human_eval_infilling.execution import check_correctness
 STOP_WORDS = ["<|endoftext|>", "<|filename|>", "<file_sep>"]
 FIM_MIDDLE = '<fim_middle>'
-BENCHMARK_NAME = ["single-line", "multi-line", "random-span", "random-span-light"]
+BENCHMARK_NAME = ["single-line", "multi-line", "random-span"]
 # BENCHMARK_NAME = ["single-line"]
 
 def estimate_pass_at_k(
@@ -60,16 +60,16 @@ def evaluate_functional_correctness(
     results to f"{sample_file}_results.jsonl.gz"
     """
     pass_at_ks = {}
-    samples = group_samples_by_benchmark(sample_file)
+    result_samples = group_samples_by_benchmark(sample_file)
     for benchmark_name in BENCHMARK_NAME:
         print(f"Benchmarking on {benchmark_name}")
         out_file = sample_file[:sample_file.find('.jsonl')] + f"_{benchmark_name}" + "_results.jsonl"
         if not os.path.exists(out_file):
-            benchmark_samples = samples[benchmark_name]
+            benchmark_samples = result_samples[benchmark_name]
             print(f"Number of samples for this benchmark: {len(benchmark_samples)}")
             problems = read_problems(benchmark_name)
             # Check the generated samples against test suites.
-            with ThreadPoolExecutor(max_workers=n_workers) as executor:
+            with ProcessPoolExecutor(max_workers=n_workers) as executor:
 
                 futures = []
                 completion_id = Counter()
@@ -116,7 +116,7 @@ def evaluate_functional_correctness(
             total = np.array(total)
             correct = np.array(correct)
 
-            ks = k
+            ks = [1,5,10,20,50,100]
             pass_at_k = {
                 f"pass@{k}": estimate_pass_at_k(total, correct, k).mean() for k in ks if (total >= k).all()
             }
@@ -154,7 +154,7 @@ def evaluate_functional_correctness(
                 correct.append(sum(passed))
             total = np.array(total)
             correct = np.array(correct)
-            ks = k
+            ks = [1,5,10,20,50,100]
             pass_at_k = {
                 f"pass@{k}": estimate_pass_at_k(total, correct, k).mean() for k in ks if (total >= k).all()
             }
