@@ -77,28 +77,34 @@ def evaluate_functional_correctness(
                 results = defaultdict(list)
 
                 print("Reading samples...")
-                for sample in tqdm.tqdm(benchmark_samples):
-                    task_id = sample["task_id"]
-                    completion = sample["output"]
-                    completion_start = completion.find(FIM_MIDDLE) + len(FIM_MIDDLE)
-                    completion = completion[completion_start:]
-                    completion_end = len(completion)
-                    for stop_word in STOP_WORDS:
-                        if stop_word in completion:
-                            completion_end = min(completion_end, completion.find(stop_word))
-                    completion = completion[:completion_end]
-                    args = (problems[task_id], completion, timeout, completion_id[task_id])
+                benchmark_dict = defaultdict(list)
+
+                for sample in benchmark_samples:
+                    benchmark_dict[sample["task_id"]].append(sample)
+                for task_id, samples in tqdm.tqdm(benchmark_dict.items()):
+                    completions = []
+                    for sample in samples:
+                        completion = sample["output"]
+                        completion_start = completion.find(FIM_MIDDLE) + len(FIM_MIDDLE)
+                        completion = completion[completion_start:]
+                        completion_end = len(completion)
+                        for stop_word in STOP_WORDS:
+                            if stop_word in completion:
+                                completion_end = min(completion_end, completion.find(stop_word))
+                        completion = completion[:completion_end]
+                        completions.append(completion)
+                    args = (problems[task_id], completions, timeout, completion_id[task_id])
                     future = executor.submit(check_correctness, *args)
                     futures.append(future)
-                    completion_id[task_id] += 1
-                    n_samples += 1
+                    completion_id[task_id] += len(samples)
+                    n_samples += len(samples)
 
                 # assert len(completion_id) == len(problems), "Some problems are not attempted."
 
                 print("Running test suites...")
                 for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
-                    result = future.result()
-                    results[result["task_id"]].append((result["completion_id"], result))
+                    for result in future.result():
+                        results[result["task_id"]].append((result["completion_id"], result))
 
             # Calculate pass@k.
             total, correct = [], []
